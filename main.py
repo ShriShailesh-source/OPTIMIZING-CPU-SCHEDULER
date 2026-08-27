@@ -13,7 +13,13 @@ from a script / notebook -- see README.md for examples.
 import os
 import sys
 
-from config import DEFAULT_TIME_QUANTUM, DEFAULT_SEED, WORKLOAD_TYPES
+from config import (
+    DEFAULT_TIME_QUANTUM,
+    DEFAULT_SEED,
+    FINAL_EXPERIMENT_SEEDS,
+    VM_COUNT_PRESETS,
+    WORKLOAD_TYPES,
+)
 from simulation.workload_generator import generate_workload, fresh_copy
 from simulation.simulator import Simulator
 from evaluation.metrics import compute_metrics
@@ -22,6 +28,28 @@ from visualization.plots import generate_all_summary_plots
 from visualization.gantt import plot_gantt
 
 RESULTS_DIR = "results"
+SUMMARY_COLUMNS = [
+    "scheduler", "num_vms", "workload_type", "avg_waiting_time",
+    "avg_turnaround_time", "avg_response_time", "cpu_utilization",
+    "throughput", "deadline_misses", "deadline_miss_rate",
+    "fairness_jain_index", "estimated_energy", "context_switches",
+    "estimated_scheduling_overhead",
+]
+SUMMARY_LABELS = {
+    "num_vms": "VM Count",
+    "workload_type": "Workload",
+    "avg_waiting_time": "Average Waiting Time",
+    "avg_turnaround_time": "Average Turnaround Time",
+    "avg_response_time": "Average Response Time",
+    "cpu_utilization": "CPU Utilization",
+    "throughput": "Throughput",
+    "deadline_misses": "Deadline Misses",
+    "deadline_miss_rate": "Deadline Miss Rate",
+    "fairness_jain_index": "Fairness",
+    "estimated_energy": "Estimated Energy",
+    "context_switches": "Context Switches",
+    "estimated_scheduling_overhead": "Scheduling Overhead",
+}
 
 
 def ask_int(prompt, default):
@@ -33,6 +61,47 @@ def ask_choice(prompt, choices, default):
     print(f"{prompt} ({'/'.join(choices)}) [{default}]: ", end="")
     raw = input().strip()
     return raw if raw in choices else default
+
+
+def print_experiment_config(vm_counts, workload_types, seeds):
+    print("\n=== Experiment Configuration ===")
+    print(f"VM counts: {', '.join(map(str, vm_counts))}")
+    print(f"Workloads: {', '.join(workload_types)}")
+    print(f"Seeds: {', '.join(map(str, seeds))}")
+    print("Schedulers: PRR, PRM, Contextual Bandit RL, Proposed Hybrid")
+
+
+def save_experiment_results(long_df, avg_df, prefix):
+    os.makedirs(RESULTS_DIR, exist_ok=True)
+    raw_path = os.path.join(RESULTS_DIR, f"{prefix}_raw.csv")
+    summary_path = os.path.join(RESULTS_DIR, f"{prefix}_avg.csv")
+    long_df.to_csv(raw_path, index=False)
+    avg_df.to_csv(summary_path, index=False)
+
+    display_df = avg_df[SUMMARY_COLUMNS].rename(columns=SUMMARY_LABELS)
+    print("\n=== Averaged Summary ===")
+    print(display_df.to_string(index=False))
+    print(f"\nRaw results saved -> {raw_path}")
+    print(f"Summary results saved -> {summary_path}")
+
+
+def run_configured_experiment(vm_counts, workload_types, seeds, prefix):
+    print_experiment_config(vm_counts, workload_types, seeds)
+    long_df, avg_df = run_full_experiment(
+        vm_counts=vm_counts,
+        workload_types=workload_types,
+        seeds=seeds,
+    )
+    save_experiment_results(long_df, avg_df, prefix)
+
+
+def menu_small_experiment():
+    run_configured_experiment(
+        vm_counts=[5],
+        workload_types=list(WORKLOAD_TYPES),
+        seeds=list(FINAL_EXPERIMENT_SEEDS),
+        prefix="small_experiment",
+    )
 
 
 def menu_single_comparison():
@@ -51,26 +120,29 @@ def menu_single_comparison():
 
 
 def menu_full_experiment():
-    print("Running full experiment sweep (this runs many simulations, may take a bit)...")
-    vm_counts_raw = input("VM counts, comma separated [5,10,20,50]: ").strip()
-    vm_counts = [int(x) for x in vm_counts_raw.split(",")] if vm_counts_raw else [5, 10, 20, 50]
+    print("Running the complete final experiment sweep (this may take a while)...")
+    vm_counts_raw = input("VM counts, comma separated [5,10,20,50,100]: ").strip()
+    vm_counts = [int(x) for x in vm_counts_raw.split(",")] if vm_counts_raw else list(VM_COUNT_PRESETS)
 
-    wl_raw = input("Workload types, comma separated [light,normal,cpu_heavy,bursty]: ").strip()
+    wl_raw = input("Workload types, comma separated [light,normal,cpu_heavy,bursty,mixed]: ").strip()
     workload_types = [w.strip() for w in wl_raw.split(",")] if wl_raw else \
-        ["light", "normal", "cpu_heavy", "bursty"]
+        list(WORKLOAD_TYPES)
 
     seeds_raw = input("Number of trial seeds [5]: ").strip()
-    n_seeds = int(seeds_raw) if seeds_raw else 5
+    n_seeds = int(seeds_raw) if seeds_raw else len(FINAL_EXPERIMENT_SEEDS)
     seeds = list(range(1, n_seeds + 1))
 
-    long_df, avg_df = run_full_experiment(vm_counts, workload_types, seeds=seeds)
+    run_configured_experiment(vm_counts, workload_types, seeds, "full_experiment")
 
-    os.makedirs(RESULTS_DIR, exist_ok=True)
-    long_df.to_csv(os.path.join(RESULTS_DIR, "full_experiment_raw.csv"), index=False)
-    avg_df.to_csv(os.path.join(RESULTS_DIR, "full_experiment_avg.csv"), index=False)
-    print(f"\nSaved raw + averaged results into {RESULTS_DIR}/")
-    print("\n=== Averaged results (head) ===")
-    print(avg_df.head(20).to_string(index=False))
+
+def menu_individual_workload_experiment():
+    workload = ask_choice("Workload type", WORKLOAD_TYPES, "normal")
+    run_configured_experiment(
+        vm_counts=list(VM_COUNT_PRESETS),
+        workload_types=[workload],
+        seeds=list(FINAL_EXPERIMENT_SEEDS),
+        prefix=f"{workload}_experiment",
+    )
 
 
 def menu_view_rl_decisions():
@@ -80,7 +152,7 @@ def menu_view_rl_decisions():
     which = ask_choice("Which scheduler", ["rl", "hybrid"], "hybrid")
 
     workload_vms = generate_workload(num_vms, workload, seed)
-    schedulers = build_schedulers(debug=True)
+    schedulers = build_schedulers(debug=True, seed=seed)
     sched = schedulers["Contextual Bandit RL"] if which == "rl" else schedulers["Proposed Hybrid"]
 
     sim = Simulator(quantum=DEFAULT_TIME_QUANTUM, debug=True)
@@ -108,7 +180,7 @@ def menu_generate_gantt():
     seed = ask_int("Random seed", DEFAULT_SEED)
 
     workload_vms = generate_workload(num_vms, workload, seed)
-    schedulers = build_schedulers(debug=False)
+    schedulers = build_schedulers(debug=False, seed=seed)
 
     os.makedirs(RESULTS_DIR, exist_ok=True)
     for name, sched in schedulers.items():
@@ -125,10 +197,12 @@ MENU = """
         CPU Scheduling Simulator - Main Menu
 ==================================================
 1. Run single comparison (all 4 schedulers, one workload)
-2. Run full experiment (sweep VM counts x workloads x seeds)
+2. Run complete final experiment (5 VM counts x 5 workloads x 5 seeds)
 3. View RL / Hybrid decisions (live debug trace)
 4. Generate summary graphs (from last full experiment)
 5. Generate Gantt charts (all 4 schedulers, one workload)
+6. Run small experiment (5 VMs x 5 workloads x 5 seeds)
+7. Run individual workload experiment (all VM counts x 5 seeds)
 0. Exit
 """
 
@@ -147,6 +221,10 @@ def main():
             menu_generate_graphs()
         elif choice == "5":
             menu_generate_gantt()
+        elif choice == "6":
+            menu_small_experiment()
+        elif choice == "7":
+            menu_individual_workload_experiment()
         elif choice == "0":
             sys.exit(0)
         else:

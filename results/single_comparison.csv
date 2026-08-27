@@ -1,0 +1,5 @@
+scheduler,num_vms,avg_waiting_time,avg_turnaround_time,avg_response_time,cpu_utilization,throughput,deadline_misses,deadline_miss_rate,fairness_jain_index,estimated_energy,context_switches,estimated_scheduling_overhead,total_time
+PRR,6,103.685,146.7033,82.4817,0.9937,0.0231,5,0.8333,0.2182,645.275,6,0.3,259.75
+PRM,6,96.41,139.4283,96.41,0.9937,0.0231,5,0.8333,0.188,645.275,5,0.25,259.75
+Contextual Bandit RL,6,174.7983,217.8167,14.8567,0.9937,0.0231,6,1.0,0.5858,645.275,67,3.35,259.75
+Proposed Hybrid,6,149.5917,192.61,12.3033,0.9937,0.0231,5,0.8333,0.4643,645.275,69,3.45,259.75

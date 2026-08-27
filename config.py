@@ -43,6 +43,7 @@ PERIOD_RANGE = (10, 100)        # used by PRM (rate-monotonic) and deadlines
 DEADLINE_SLACK_RANGE = (1.2, 3.0)  # deadline = arrival + slack * burst_time
 
 VM_COUNT_PRESETS = [5, 10, 20, 50, 100]
+FINAL_EXPERIMENT_SEEDS = [1, 2, 3, 4, 5]
 
 # ---------------------------------------------------------------------------
 # Scheduler engine

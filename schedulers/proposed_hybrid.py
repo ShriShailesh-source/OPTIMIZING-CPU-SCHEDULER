@@ -28,7 +28,6 @@ same reward function as the plain bandit scheduler, so "does the RL part
 still learn" can be verified independently of the extra modules.
 """
 
-import random
 import numpy as np
 
 from config import HYBRID_WEIGHTS
@@ -89,8 +88,8 @@ class ProposedHybridScheduler(ContextualBanditScheduler):
                 - w["energy"] * norm_power[vid]
             )
 
-        if random.random() < self.epsilon:
-            chosen_id = random.choice(list(scores.keys()))
+        if self.rng.random() < self.epsilon:
+            chosen_id = self.rng.choice(list(scores.keys()))
             mode = "explore"
         else:
             chosen_id = max(scores, key=scores.get)

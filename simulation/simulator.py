@@ -97,9 +97,11 @@ class Simulator:
                 chosen.context_switches += 1
 
             # 5. execute for one quantum slice (or until completion)
+            start_time = time
             run_time = min(self.quantum, chosen.remaining_time)
             chosen.remaining_time -= run_time
             time += run_time
+            end_time = time
             total_busy += run_time
             chosen.last_run_time = time
 
@@ -137,15 +139,18 @@ class Simulator:
             if hasattr(scheduler, "on_decision_result"):
                 scheduler.on_decision_result(chosen, run_time, finished, reward_info, self)
 
-            if self.debug:
-                log_entry = {
-                    "time": round(time, 2),
-                    "selected_vm": chosen.vm_id,
-                    "run_time": run_time,
-                    "finished": finished,
-                    "ready_count": len(ready) + (1 if finished else 0),
-                }
-                decision_log.append(log_entry)
+            decision_log.append({
+                "order": len(decision_log) + 1,
+                "vm_id": chosen.vm_id,
+                "selected_vm": chosen.vm_id,
+                "start_time": round(start_time, 2),
+                "end_time": round(end_time, 2),
+                "duration": round(run_time, 2),
+                "time": round(end_time, 2),
+                "run_time": run_time,
+                "finished": finished,
+                "ready_count": len(ready) + (1 if finished else 0),
+            })
 
             last_run_vm_id = chosen.vm_id
 

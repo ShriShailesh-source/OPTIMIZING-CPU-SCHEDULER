@@ -67,10 +67,12 @@ def featurize(vm, current_time, ready_queue_len) -> np.ndarray:
 class ContextualBanditScheduler:
     name = "Contextual Bandit RL"
 
-    def __init__(self, lr=RL_LEARNING_RATE, epsilon=RL_EPSILON_START, debug=False, n_features=7):
+    def __init__(self, lr=RL_LEARNING_RATE, epsilon=RL_EPSILON_START, debug=False,
+                 n_features=7, rng=None):
         self.lr = lr
         self.epsilon = epsilon
         self.debug = debug
+        self.rng = rng if rng is not None else random.Random()
         self.weights = np.zeros(n_features, dtype=float)
         self._last_features = None
         self._last_vm_id = None
@@ -83,8 +85,8 @@ class ContextualBanditScheduler:
         feats = {v.vm_id: featurize(v, current_time, len(ready_queue)) for v in ready_queue}
         q_values = {vid: self.q_value(f) for vid, f in feats.items()}
 
-        if random.random() < self.epsilon:
-            chosen_id = random.choice(list(q_values.keys()))
+        if self.rng.random() < self.epsilon:
+            chosen_id = self.rng.choice(list(q_values.keys()))
             mode = "explore"
         else:
             chosen_id = max(q_values, key=q_values.get)

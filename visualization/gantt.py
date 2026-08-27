@@ -11,8 +11,8 @@ reconstruction.
 """
 
 import os
+from matplotlib import colormaps
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm
 
 
 def plot_gantt(sim_result, title, outdir="results", filename="gantt.png"):
@@ -20,25 +20,24 @@ def plot_gantt(sim_result, title, outdir="results", filename="gantt.png"):
     if not log:
         raise ValueError("SimulationResult has no decision_log -- rerun Simulator with debug=True")
 
-    vm_ids = sorted({entry["selected_vm"] for entry in log})
-    cmap = cm.get_cmap("tab20", max(len(vm_ids), 1))
+    vm_ids = sorted({entry["vm_id"] for entry in log})
+    cmap = colormaps["tab20"].resampled(max(len(vm_ids), 1))
     color_map = {vid: cmap(i) for i, vid in enumerate(vm_ids)}
 
     fig, ax = plt.subplots(figsize=(12, max(3, len(vm_ids) * 0.35)))
     y_pos = {vid: i for i, vid in enumerate(vm_ids)}
 
-    t = 0.0
     for entry in log:
-        start = t
-        dur = entry["run_time"]
-        vid = entry["selected_vm"]
+        start = entry["start_time"]
+        dur = entry["duration"]
+        vid = entry["vm_id"]
         ax.barh(y_pos[vid], dur, left=start, height=0.6,
                 color=color_map[vid], edgecolor="black", linewidth=0.4)
-        t = start + dur
 
     ax.set_yticks(list(y_pos.values()))
     ax.set_yticklabels([f"VM {vid}" for vid in y_pos.keys()])
     ax.set_xlabel("Time (ticks)")
+    ax.set_xlim(0, sim_result.total_time)
     ax.set_title(title, fontsize=13, fontweight="bold")
     ax.grid(axis="x", alpha=0.3)
     fig.tight_layout()

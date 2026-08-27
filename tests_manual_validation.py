@@ -12,6 +12,7 @@ from models.vm import VM
 from simulation.simulator import Simulator
 from schedulers.prr import PRRScheduler
 from evaluation.metrics import compute_metrics
+from evaluation.experiments import run_single_comparison
 
 
 def hand_worked_example():
@@ -108,6 +109,66 @@ def identical_workload_check():
     print("Identical-workload / deep-copy isolation check PASSED.")
 
 
+def gantt_trace_check():
+    """Execution trace must preserve delayed starts and quantum slices."""
+    vms = [
+        VM(vm_id=0, arrival_time=5, burst_time=6, priority=5, period=50,
+           workload_type="normal", deadline_relative=100),
+        VM(vm_id=1, arrival_time=5, burst_time=2, priority=5, period=50,
+           workload_type="normal", deadline_relative=100),
+    ]
+
+    result = Simulator(quantum=4, debug=True).run(
+        vms, PRRScheduler(), scheduler_name="gantt-trace-check"
+    )
+    intervals = [
+        (entry["vm_id"], entry["start_time"], entry["end_time"], entry["duration"])
+        for entry in result.decision_log
+    ]
+    assert intervals == [
+        (0, 5, 9, 4),
+        (1, 9, 11, 2),
+        (0, 11, 13, 2),
+    ], f"unexpected execution trace: {intervals}"
+    assert result.total_idle_time == 5.0, "initial idle period was not preserved"
+    print("Gantt trace timing check PASSED.")
+
+
+def reproducibility_check():
+    """The same experiment seed must reproduce workloads, traces, and metrics."""
+    df_a, results_a = run_single_comparison(8, "normal", seed=123)
+    df_b, results_b = run_single_comparison(8, "normal", seed=123)
+    df_c, results_c = run_single_comparison(8, "normal", seed=124)
+
+    def workload_signature(result):
+        return [
+            (v.vm_id, v.arrival_time, v.burst_time, v.priority, v.period,
+             v.workload_type, v.deadline_relative)
+            for v in sorted(result.vms, key=lambda vm: vm.vm_id)
+        ]
+
+    def trace_signature(result):
+        return [
+            (entry["order"], entry["vm_id"], entry["start_time"],
+             entry["end_time"], entry["duration"], entry["finished"])
+            for entry in result.decision_log
+        ]
+
+    for name in results_a:
+        assert workload_signature(results_a[name]) == workload_signature(results_b[name])
+        assert trace_signature(results_a[name]) == trace_signature(results_b[name])
+    assert df_a.to_dict("records") == df_b.to_dict("records")
+
+    workload_changed = workload_signature(results_a["PRR"]) != workload_signature(results_c["PRR"])
+    trace_changed = any(
+        trace_signature(results_a[name]) != trace_signature(results_c[name])
+        for name in results_a
+    )
+    assert workload_changed, "different seeds should change the generated workload"
+    assert trace_changed, "different seeds should be able to change scheduling decisions"
+    print("Reproducibility check PASSED.")
+
+
 if __name__ == "__main__":
     print("=" * 60)
     print("1) Hand-worked waiting/turnaround/response/utilization check")
@@ -123,3 +184,13 @@ if __name__ == "__main__":
     print("3) Identical-workload-across-schedulers check")
     print("=" * 60)
     identical_workload_check()
+
+    print("\n" + "=" * 60)
+    print("4) Gantt trace timing check")
+    print("=" * 60)
+    gantt_trace_check()
+
+    print("\n" + "=" * 60)
+    print("5) RL/Hybrid reproducibility check")
+    print("=" * 60)
+    reproducibility_check()
