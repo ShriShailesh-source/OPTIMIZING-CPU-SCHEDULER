@@ -46,6 +46,8 @@ class SimulationResult:
 
 class Simulator:
     def __init__(self, quantum: float = DEFAULT_TIME_QUANTUM, debug: bool = False):
+        if quantum <= 0:
+            raise ValueError("quantum must be greater than zero")
         self.quantum = quantum
         self.debug = debug
 

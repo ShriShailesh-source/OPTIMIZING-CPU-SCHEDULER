@@ -11,14 +11,23 @@ reconstruction.
 """
 
 import os
-from matplotlib import colormaps
-import matplotlib.pyplot as plt
+from html import escape
+
+try:
+    from matplotlib import colormaps
+    import matplotlib.pyplot as plt
+except Exception:  # pragma: no cover - used when a plotting backend is unavailable
+    colormaps = None
+    plt = None
 
 
 def plot_gantt(sim_result, title, outdir="results", filename="gantt.png"):
     log = sim_result.decision_log
     if not log:
         raise ValueError("SimulationResult has no decision_log -- rerun Simulator with debug=True")
+
+    if plt is None:
+        return _plot_gantt_svg(sim_result, title, outdir, filename)
 
     vm_ids = sorted({entry["vm_id"] for entry in log})
     cmap = colormaps["tab20"].resampled(max(len(vm_ids), 1))
@@ -46,4 +55,37 @@ def plot_gantt(sim_result, title, outdir="results", filename="gantt.png"):
     path = os.path.join(outdir, filename)
     fig.savefig(path, dpi=300, bbox_inches="tight")
     plt.close(fig)
+    return path
+
+
+def _plot_gantt_svg(sim_result, title, outdir, filename):
+    """Dependency-free Gantt export that uses the engine's real decision log."""
+    vm_ids = sorted({entry["vm_id"] for entry in sim_result.decision_log})
+    width, row_h, left, right, top, bottom = 1200, 42, 110, 40, 75, 70
+    height = top + bottom + row_h * len(vm_ids)
+    plot_w = width - left - right
+    colors = ["#4a7fb5", "#e0a13c", "#c0392b", "#6a9c5b", "#7b61a8", "#777777"]
+    y_pos = {vm_id: top + index * row_h for index, vm_id in enumerate(vm_ids)}
+    parts = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
+        '<rect width="100%" height="100%" fill="white"/>',
+        f'<text x="{width / 2}" y="35" text-anchor="middle" font-family="Arial" font-size="20" font-weight="bold">{escape(title)}</text>',
+        f'<line x1="{left}" y1="{top + row_h * len(vm_ids)}" x2="{left + plot_w}" y2="{top + row_h * len(vm_ids)}" stroke="black"/>',
+    ]
+    for vm_id in vm_ids:
+        y = y_pos[vm_id]
+        parts.append(f'<text x="{left - 10}" y="{y + 25}" text-anchor="end" font-family="Arial" font-size="13">VM {vm_id}</text>')
+        parts.append(f'<line x1="{left}" y1="{y + row_h}" x2="{left + plot_w}" y2="{y + row_h}" stroke="#dddddd"/>')
+    for entry in sim_result.decision_log:
+        x = left + plot_w * entry["start_time"] / sim_result.total_time
+        bar_w = plot_w * entry["duration"] / sim_result.total_time
+        y = y_pos[entry["vm_id"]] + 7
+        color = colors[vm_ids.index(entry["vm_id"]) % len(colors)]
+        parts.append(f'<rect x="{x:.2f}" y="{y}" width="{bar_w:.2f}" height="{row_h - 14}" fill="{color}"/>')
+    parts.append(f'<text x="{left + plot_w / 2}" y="{height - 18}" text-anchor="middle" font-family="Arial" font-size="14">Time (ticks)</text>')
+    parts.append('</svg>')
+    os.makedirs(outdir, exist_ok=True)
+    path = os.path.join(outdir, filename.replace(".png", ".svg"))
+    with open(path, "w", encoding="utf-8") as handle:
+        handle.write("\n".join(parts))
     return path

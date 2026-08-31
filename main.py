@@ -24,6 +24,7 @@ from simulation.workload_generator import generate_workload, fresh_copy
 from simulation.simulator import Simulator
 from evaluation.metrics import compute_metrics
 from evaluation.experiments import run_single_comparison, run_full_experiment, build_schedulers
+from evaluation.reporting import save_human_readable_summaries
 from visualization.plots import generate_all_summary_plots
 from visualization.gantt import plot_gantt
 
@@ -77,12 +78,14 @@ def save_experiment_results(long_df, avg_df, prefix):
     summary_path = os.path.join(RESULTS_DIR, f"{prefix}_avg.csv")
     long_df.to_csv(raw_path, index=False)
     avg_df.to_csv(summary_path, index=False)
+    reports = save_human_readable_summaries(avg_df, RESULTS_DIR, prefix)
 
     display_df = avg_df[SUMMARY_COLUMNS].rename(columns=SUMMARY_LABELS)
     print("\n=== Averaged Summary ===")
     print(display_df.to_string(index=False))
     print(f"\nRaw results saved -> {raw_path}")
     print(f"Summary results saved -> {summary_path}")
+    print(f"Human-readable overall summary -> {reports['overall_md']}")
 
 
 def run_configured_experiment(vm_counts, workload_types, seeds, prefix):

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="481" viewBox="0 0 1200 481">
+<rect width="100%" height="100%" fill="white"/>
+<text x="600.0" y="35" text-anchor="middle" font-family="Arial" font-size="20" font-weight="bold">Gantt Chart - Proposed Hybrid (normal, 8 VMs)</text>
+<line x1="110" y1="411" x2="1160" y2="411" stroke="black"/>
+<text x="100" y="100" text-anchor="end" font-family="Arial" font-size="13">VM 0</text>
+<line x1="110" y1="117" x2="1160" y2="117" stroke="#dddddd"/>
+<text x="100" y="142" text-anchor="end" font-family="Arial" font-size="13">VM 1</text>
+<line x1="110" y1="159" x2="1160" y2="159" stroke="#dddddd"/>
+<text x="100" y="184" text-anchor="end" font-family="Arial" font-size="13">VM 2</text>
+<line x1="110" y1="201" x2="1160" y2="201" stroke="#dddddd"/>
+<text x="100" y="226" text-anchor="end" font-family="Arial" font-size="13">VM 3</text>
+<line x1="110" y1="243" x2="1160" y2="243" stroke="#dddddd"/>
+<text x="100" y="268" text-anchor="end" font-family="Arial" font-size="13">VM 4</text>
+<line x1="110" y1="285" x2="1160" y2="285" stroke="#dddddd"/>
+<text x="100" y="310" text-anchor="end" font-family="Arial" font-size="13">VM 5</text>
+<line x1="110" y1="327" x2="1160" y2="327" stroke="#dddddd"/>
+<text x="100" y="352" text-anchor="end" font-family="Arial" font-size="13">VM 6</text>
+<line x1="110" y1="369" x2="1160" y2="369" stroke="#dddddd"/>
+<text x="100" y="394" text-anchor="end" font-family="Arial" font-size="13">VM 7</text>
+<line x1="110" y1="411" x2="1160" y2="411" stroke="#dddddd"/>
+<rect x="177.93" y="82" width="40.92" height="28" fill="#4a7fb5"/>
+<rect x="218.86" y="82" width="40.92" height="28" fill="#4a7fb5"/>
+<rect x="259.78" y="124" width="40.92" height="28" fill="#e0a13c"/>
+<rect x="300.70" y="124" width="40.92" height="28" fill="#e0a13c"/>
+<rect x="341.63" y="166" width="40.92" height="28" fill="#c0392b"/>
+<rect x="382.55" y="208" width="40.92" height="28" fill="#6a9c5b"/>
+<rect x="423.48" y="208" width="40.92" height="28" fill="#6a9c5b"/>
+<rect x="464.40" y="124" width="40.92" height="28" fill="#e0a13c"/>
+<rect x="505.32" y="208" width="4.19" height="28" fill="#6a9c5b"/>
+<rect x="509.52" y="124" width="40.92" height="28" fill="#e0a13c"/>
+<rect x="550.44" y="124" width="4.30" height="28" fill="#e0a13c"/>
+<rect x="554.74" y="292" width="40.92" height="28" fill="#777777"/>
+<rect x="595.66" y="292" width="40.92" height="28" fill="#777777"/>
+<rect x="636.59" y="82" width="36.63" height="28" fill="#4a7fb5"/>
+<rect x="673.21" y="292" width="40.92" height="28" fill="#777777"/>
+<rect x="714.14" y="292" width="40.92" height="28" fill="#777777"/>
+<rect x="755.06" y="292" width="6.96" height="28" fill="#777777"/>
+<rect x="762.02" y="334" width="40.92" height="28" fill="#4a7fb5"/>
+<rect x="802.94" y="334" width="33.86" height="28" fill="#4a7fb5"/>
+<rect x="836.81" y="376" width="40.92" height="28" fill="#e0a13c"/>
+<rect x="877.73" y="376" width="40.92" height="28" fill="#e0a13c"/>
+<rect x="918.65" y="376" width="26.19" height="28" fill="#e0a13c"/>
+<rect x="944.84" y="166" width="40.92" height="28" fill="#c0392b"/>
+<rect x="985.77" y="250" width="40.92" height="28" fill="#7b61a8"/>
+<rect x="1026.69" y="166" width="26.19" height="28" fill="#c0392b"/>
+<rect x="1052.88" y="250" width="40.92" height="28" fill="#7b61a8"/>
+<rect x="1093.81" y="250" width="40.92" height="28" fill="#7b61a8"/>
+<rect x="1134.73" y="250" width="25.27" height="28" fill="#7b61a8"/>
+<text x="635.0" y="463" text-anchor="middle" font-family="Arial" font-size="14">Time (ticks)</text>
+</svg>

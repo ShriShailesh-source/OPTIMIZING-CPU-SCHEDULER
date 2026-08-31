@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620">
+<rect width="100%" height="100%" fill="white"/>
+<text x="500.0" y="35" text-anchor="middle" font-family="Arial" font-size="20" font-weight="bold">Throughput vs. Workload Intensity</text>
+<text x="25" y="280.0" transform="rotate(-90 25 280.0)" text-anchor="middle" font-family="Arial" font-size="14">VMs / tick</text>
+<line x1="100" y1="70" x2="100" y2="490" stroke="black"/>
+<line x1="100" y1="490" x2="960" y2="490" stroke="black"/>
+<line x1="100" y1="490.0" x2="960" y2="490.0" stroke="#dddddd"/>
+<text x="90" y="495.0" text-anchor="end" font-family="Arial" font-size="12">0</text>
+<line x1="100" y1="406.0" x2="960" y2="406.0" stroke="#dddddd"/>
+<text x="90" y="411.0" text-anchor="end" font-family="Arial" font-size="12">0.0208</text>
+<line x1="100" y1="322.0" x2="960" y2="322.0" stroke="#dddddd"/>
+<text x="90" y="327.0" text-anchor="end" font-family="Arial" font-size="12">0.0417</text>
+<line x1="100" y1="238.0" x2="960" y2="238.0" stroke="#dddddd"/>
+<text x="90" y="243.0" text-anchor="end" font-family="Arial" font-size="12">0.0625</text>
+<line x1="100" y1="154.0" x2="960" y2="154.0" stroke="#dddddd"/>
+<text x="90" y="159.0" text-anchor="end" font-family="Arial" font-size="12">0.0834</text>
+<line x1="100" y1="70.0" x2="960" y2="70.0" stroke="#dddddd"/>
+<text x="90" y="75.0" text-anchor="end" font-family="Arial" font-size="12">0.104</text>
+<text x="186.0" y="515" text-anchor="middle" font-family="Arial" font-size="12">light</text>
+<text x="358.0" y="515" text-anchor="middle" font-family="Arial" font-size="12">normal</text>
+<text x="530.0" y="515" text-anchor="middle" font-family="Arial" font-size="12">cpu_heavy</text>
+<text x="702.0" y="515" text-anchor="middle" font-family="Arial" font-size="12">bursty</text>
+<text x="874.0" y="515" text-anchor="middle" font-family="Arial" font-size="12">mixed</text>
+<polyline points="186.0,108.2 358.0,189.9 530.0,393.4 702.0,346.2 874.0,212.7" fill="none" stroke="#555555" stroke-width="2.5"/>
+<circle cx="186.0" cy="108.2" r="4" fill="#555555"/>
+<circle cx="358.0" cy="189.9" r="4" fill="#555555"/>
+<circle cx="530.0" cy="393.4" r="4" fill="#555555"/>
+<circle cx="702.0" cy="346.2" r="4" fill="#555555"/>
+<circle cx="874.0" cy="212.7" r="4" fill="#555555"/>
+<rect x="100" y="565" width="14" height="14" fill="#555555"/>
+<text x="120" y="577" font-family="Arial" font-size="12">PRR</text>
+<polyline points="186.0,108.2 358.0,189.9 530.0,393.4 702.0,346.2 874.0,212.7" fill="none" stroke="#4a7fb5" stroke-width="2.5"/>
+<circle cx="186.0" cy="108.2" r="4" fill="#4a7fb5"/>
+<circle cx="358.0" cy="189.9" r="4" fill="#4a7fb5"/>
+<circle cx="530.0" cy="393.4" r="4" fill="#4a7fb5"/>
+<circle cx="702.0" cy="346.2" r="4" fill="#4a7fb5"/>
+<circle cx="874.0" cy="212.7" r="4" fill="#4a7fb5"/>
+<rect x="290" y="565" width="14" height="14" fill="#4a7fb5"/>
+<text x="310" y="577" font-family="Arial" font-size="12">PRM</text>
+<polyline points="186.0,108.2 358.0,189.9 530.0,393.4 702.0,346.2 874.0,212.7" fill="none" stroke="#e0a13c" stroke-width="2.5"/>
+<circle cx="186.0" cy="108.2" r="4" fill="#e0a13c"/>
+<circle cx="358.0" cy="189.9" r="4" fill="#e0a13c"/>
+<circle cx="530.0" cy="393.4" r="4" fill="#e0a13c"/>
+<circle cx="702.0" cy="346.2" r="4" fill="#e0a13c"/>
+<circle cx="874.0" cy="212.7" r="4" fill="#e0a13c"/>
+<rect x="480" y="565" width="14" height="14" fill="#e0a13c"/>
+<text x="500" y="577" font-family="Arial" font-size="12">Contextual Bandit RL</text>
+<polyline points="186.0,108.2 358.0,189.9 530.0,393.4 702.0,346.2 874.0,212.7" fill="none" stroke="#c0392b" stroke-width="2.5"/>
+<circle cx="186.0" cy="108.2" r="4" fill="#c0392b"/>
+<circle cx="358.0" cy="189.9" r="4" fill="#c0392b"/>
+<circle cx="530.0" cy="393.4" r="4" fill="#c0392b"/>
+<circle cx="702.0" cy="346.2" r="4" fill="#c0392b"/>
+<circle cx="874.0" cy="212.7" r="4" fill="#c0392b"/>
+<rect x="670" y="565" width="14" height="14" fill="#c0392b"/>
+<text x="690" y="577" font-family="Arial" font-size="12">Proposed Hybrid</text>
+</svg>

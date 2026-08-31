@@ -86,7 +86,7 @@ project/
 │   └── experiments.py            # experiment sweep runner
 │
 ├── visualization/
-│   ├── plots.py                  # comparison bar/line charts
+│   ├── plots.py                  # comparison charts, including Jain fairness
 │   └── gantt.py                  # Gantt chart of an actual run
 │
 ├── results/                      # generated CSVs and PNGs land here
@@ -169,8 +169,8 @@ Weights live in `config.HYBRID_WEIGHTS` for easy tuning.
 ## 9. Experimental Methodology
 
 `evaluation/experiments.py::run_full_experiment` sweeps VM counts
-(5/10/20/50 by default) x workload types (light/normal/cpu_heavy/bursty by
-default) x multiple random seeds, runs all four schedulers on an
+(5/10/20/50/100 by default) x workload types
+(light/normal/cpu_heavy/bursty/mixed by default) x five random seeds (1-5), runs all four schedulers on an
 *independent copy* of the same generated workload each time, and averages
 metrics over seeds. Nothing is hard-coded: every number in `results/*.csv`
 comes from an actual `Simulator.run()` call.
@@ -188,6 +188,19 @@ Menu options:
 3. Live RL/Hybrid decision trace (for viva demo)
 4. Generate all summary graphs from the last full experiment
 5. Generate Gantt charts (all 4 schedulers, one workload)
+6. Run the small experiment (5 VMs x 5 workloads x 5 seeds)
+7. Run one workload across all configured VM counts and seeds
+
+Every experiment saves a raw CSV, a seed-averaged CSV, and human-readable
+overall and workload/VM-count summary tables in `results/`. The final full
+sweep therefore executes 5 VM counts x 5 workloads x 5 seeds x 4 schedulers
+= 500 scheduler runs.
+
+The plotting pipeline covers waiting, turnaround, response, utilization,
+throughput, deadline misses and miss rate, Jain fairness, estimated energy,
+context switches, and estimated scheduling overhead. It writes PNG charts
+when Matplotlib is available and uses equivalent data-backed SVG exports in
+restricted environments where that plotting backend cannot be loaded.
 
 Or from a script:
 ```python
@@ -229,3 +242,5 @@ python tests_manual_validation.py
 - Rate-monotonic priority here is computed directly from `period`, not
   formally derived via Liu & Layland utilization-bound schedulability
   analysis (that analysis could be added as an extension).
+- The contextual bandit learns only within each simulated run; it is not
+  pre-trained and no deep-learning model is used.

@@ -169,6 +169,43 @@ def reproducibility_check():
     print("Reproducibility check PASSED.")
 
 
+def edge_case_checks():
+    """Small boundary checks that should remain true as the project evolves."""
+    from simulation.workload_generator import generate_workload
+
+    # An empty workload is a valid no-op simulation and must yield no metrics.
+    empty_result = Simulator(quantum=4).run([], PRRScheduler(), scheduler_name="empty")
+    assert empty_result.total_time == 0.0
+    assert empty_result.total_busy_time == 0.0
+    assert empty_result.decision_log == []
+    assert compute_metrics(empty_result) == {}
+
+    # A single VM arriving after t=0 preserves idle time and has no queue delay.
+    vm = VM(vm_id=0, arrival_time=3, burst_time=3, priority=1, period=10,
+            workload_type="light", deadline_relative=10)
+    single_result = Simulator(quantum=4).run([vm], PRRScheduler(), scheduler_name="single")
+    metrics = compute_metrics(single_result)
+    assert single_result.total_idle_time == 3.0
+    assert metrics["avg_waiting_time"] == 0.0
+    assert metrics["avg_response_time"] == 0.0
+    assert metrics["cpu_utilization"] == 0.5
+    assert metrics["context_switches"] == 0
+
+    try:
+        Simulator(quantum=0)
+        raise AssertionError("zero quantum should be rejected")
+    except ValueError:
+        pass
+
+    try:
+        generate_workload(1, "unknown-workload", seed=1)
+        raise AssertionError("unknown workload type should be rejected")
+    except ValueError:
+        pass
+
+    print("Edge-case checks PASSED.")
+
+
 if __name__ == "__main__":
     print("=" * 60)
     print("1) Hand-worked waiting/turnaround/response/utilization check")
@@ -194,3 +231,8 @@ if __name__ == "__main__":
     print("5) RL/Hybrid reproducibility check")
     print("=" * 60)
     reproducibility_check()
+
+    print("\n" + "=" * 60)
+    print("6) Edge-case checks")
+    print("=" * 60)
+    edge_case_checks()

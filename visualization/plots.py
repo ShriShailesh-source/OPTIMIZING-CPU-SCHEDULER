@@ -7,7 +7,12 @@ evaluation/experiments.py -- nothing is hand-drawn or hard-coded.
 """
 
 import os
-import matplotlib.pyplot as plt
+from html import escape
+
+try:
+    import matplotlib.pyplot as plt
+except Exception:  # pragma: no cover - used when a plotting backend is unavailable
+    plt = None
 
 SCHEDULER_ORDER = ["PRR", "PRM", "Contextual Bandit RL", "Proposed Hybrid"]
 COLORS = {
@@ -105,8 +110,15 @@ def generate_all_summary_plots(avg_df, outdir="results"):
         ("cpu_utilization", "CPU Utilization", "Fraction", "cpu_utilization.png"),
         ("throughput", "Throughput", "VMs / tick", "throughput.png"),
         ("deadline_misses", "Deadline Misses", "Count", "deadline_misses.png"),
+        ("deadline_miss_rate", "Deadline Miss Rate", "Fraction", "deadline_miss_rate.png"),
+        ("fairness_jain_index", "Jain Fairness Index", "Fraction (1 = fairest)", "fairness_jain_index.png"),
         ("estimated_energy", "Estimated Energy Consumption", "Energy units (est.)", "estimated_energy.png"),
+        ("context_switches", "Context Switches", "Count", "context_switches.png"),
+        ("estimated_scheduling_overhead", "Estimated Scheduling Overhead", "Ticks (est.)", "estimated_scheduling_overhead.png"),
     ]
+
+    if plt is None:
+        return _generate_svg_summary_plots(avg_df, metric_specs, outdir)
 
     for metric, title, ylabel, fname in metric_specs:
         paths.append(bar_comparison(avg_df, metric, f"{title} (overall average)", ylabel, outdir, fname))
@@ -115,4 +127,95 @@ def generate_all_summary_plots(avg_df, outdir="results"):
         paths.append(line_vs_workload(avg_df, metric, ylabel, f"{title} vs. Workload Intensity", outdir,
                                        fname.replace(".png", "_vs_workload.png")))
 
+    return paths
+
+
+def _svg_path(outdir, filename):
+    os.makedirs(outdir, exist_ok=True)
+    return os.path.join(outdir, filename.replace(".png", ".svg"))
+
+
+def _write_svg_chart(path, title, ylabel, categories, series, chart_type):
+    """Dependency-free SVG fallback for final-review charts.
+
+    It exports the same actual DataFrame values when matplotlib cannot load in
+    a restricted runtime; no values are invented or altered.
+    """
+    width, height = 1000, 620
+    left, right, top, bottom = 100, 40, 70, 130
+    plot_w, plot_h = width - left - right, height - top - bottom
+    values = [value for points in series.values() for value in points]
+    y_max = max(values) if values else 1.0
+    y_max = y_max * 1.1 if y_max > 0 else 1.0
+    colors = ["#555555", "#4a7fb5", "#e0a13c", "#c0392b"]
+    parts = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
+        '<rect width="100%" height="100%" fill="white"/>',
+        f'<text x="{width / 2}" y="35" text-anchor="middle" font-family="Arial" font-size="20" font-weight="bold">{escape(title)}</text>',
+        f'<text x="25" y="{top + plot_h / 2}" transform="rotate(-90 25 {top + plot_h / 2})" text-anchor="middle" font-family="Arial" font-size="14">{escape(ylabel)}</text>',
+        f'<line x1="{left}" y1="{top}" x2="{left}" y2="{top + plot_h}" stroke="black"/>',
+        f'<line x1="{left}" y1="{top + plot_h}" x2="{left + plot_w}" y2="{top + plot_h}" stroke="black"/>',
+    ]
+    for tick in range(6):
+        value = y_max * tick / 5
+        y = top + plot_h - plot_h * tick / 5
+        parts.append(f'<line x1="{left}" y1="{y:.1f}" x2="{left + plot_w}" y2="{y:.1f}" stroke="#dddddd"/>')
+        parts.append(f'<text x="{left - 10}" y="{y + 5:.1f}" text-anchor="end" font-family="Arial" font-size="12">{value:.3g}</text>')
+    n_categories = max(len(categories), 1)
+    n_series = max(len(series), 1)
+    for index, category in enumerate(categories):
+        x = left + plot_w * (index + 0.5) / n_categories
+        parts.append(f'<text x="{x:.1f}" y="{top + plot_h + 25}" text-anchor="middle" font-family="Arial" font-size="12">{escape(str(category))}</text>')
+    for series_index, (name, points) in enumerate(series.items()):
+        color = colors[series_index % len(colors)]
+        if chart_type == "bar":
+            group_width = plot_w / n_categories * 0.72
+            bar_width = group_width / n_series
+            for index, value in enumerate(points):
+                x = left + plot_w * (index + 0.5) / n_categories - group_width / 2 + series_index * bar_width
+                bar_h = plot_h * value / y_max
+                y = top + plot_h - bar_h
+                parts.append(f'<rect x="{x:.1f}" y="{y:.1f}" width="{bar_width - 2:.1f}" height="{bar_h:.1f}" fill="{color}"/>')
+        else:
+            coords = []
+            for index, value in enumerate(points):
+                x = left + plot_w * (index + 0.5) / n_categories
+                y = top + plot_h - plot_h * value / y_max
+                coords.append(f'{x:.1f},{y:.1f}')
+            parts.append(f'<polyline points="{" ".join(coords)}" fill="none" stroke="{color}" stroke-width="2.5"/>')
+            for coord in coords:
+                x, y = coord.split(",")
+                parts.append(f'<circle cx="{x}" cy="{y}" r="4" fill="{color}"/>')
+        legend_x = left + series_index * 190
+        parts.append(f'<rect x="{legend_x}" y="{height - 55}" width="14" height="14" fill="{color}"/>')
+        parts.append(f'<text x="{legend_x + 20}" y="{height - 43}" font-family="Arial" font-size="12">{escape(name)}</text>')
+    parts.append('</svg>')
+    with open(path, "w", encoding="utf-8") as handle:
+        handle.write("\n".join(parts))
+
+
+def _generate_svg_summary_plots(avg_df, metric_specs, outdir):
+    paths = []
+    for metric, title, ylabel, filename in metric_specs:
+        overall = avg_df.groupby("scheduler")[metric].mean()
+        schedulers = _ordered(avg_df)
+        path = _svg_path(outdir, filename)
+        _write_svg_chart(path, f"{title} (overall average)", ylabel, schedulers,
+                         {"Average": [overall[s] for s in schedulers]}, "bar")
+        paths.append(path)
+
+        vm_counts = sorted(avg_df["num_vms"].unique())
+        by_vm = {scheduler: [avg_df[(avg_df["scheduler"] == scheduler) & (avg_df["num_vms"] == count)][metric].mean()
+                              for count in vm_counts] for scheduler in schedulers}
+        path = _svg_path(outdir, filename.replace(".png", "_vs_vms.png"))
+        _write_svg_chart(path, f"{title} vs. Number of VMs", ylabel, vm_counts, by_vm, "line")
+        paths.append(path)
+
+        workloads = [w for w in ["light", "normal", "cpu_heavy", "bursty", "mixed"]
+                     if w in avg_df["workload_type"].unique()]
+        by_workload = {scheduler: [avg_df[(avg_df["scheduler"] == scheduler) & (avg_df["workload_type"] == workload)][metric].mean()
+                                    for workload in workloads] for scheduler in schedulers}
+        path = _svg_path(outdir, filename.replace(".png", "_vs_workload.png"))
+        _write_svg_chart(path, f"{title} vs. Workload Intensity", ylabel, workloads, by_workload, "line")
+        paths.append(path)
     return paths

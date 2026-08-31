@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620">
+<rect width="100%" height="100%" fill="white"/>
+<text x="500.0" y="35" text-anchor="middle" font-family="Arial" font-size="20" font-weight="bold">Average Waiting Time vs. Number of VMs</text>
+<text x="25" y="280.0" transform="rotate(-90 25 280.0)" text-anchor="middle" font-family="Arial" font-size="14">Ticks</text>
+<line x1="100" y1="70" x2="100" y2="490" stroke="black"/>
+<line x1="100" y1="490" x2="960" y2="490" stroke="black"/>
+<line x1="100" y1="490.0" x2="960" y2="490.0" stroke="#dddddd"/>
+<text x="90" y="495.0" text-anchor="end" font-family="Arial" font-size="12">0</text>
+<line x1="100" y1="406.0" x2="960" y2="406.0" stroke="#dddddd"/>
+<text x="90" y="411.0" text-anchor="end" font-family="Arial" font-size="12">252</text>
+<line x1="100" y1="322.0" x2="960" y2="322.0" stroke="#dddddd"/>
+<text x="90" y="327.0" text-anchor="end" font-family="Arial" font-size="12">505</text>
+<line x1="100" y1="238.0" x2="960" y2="238.0" stroke="#dddddd"/>
+<text x="90" y="243.0" text-anchor="end" font-family="Arial" font-size="12">757</text>
+<line x1="100" y1="154.0" x2="960" y2="154.0" stroke="#dddddd"/>
+<text x="90" y="159.0" text-anchor="end" font-family="Arial" font-size="12">1.01e+03</text>
+<line x1="100" y1="70.0" x2="960" y2="70.0" stroke="#dddddd"/>
+<text x="90" y="75.0" text-anchor="end" font-family="Arial" font-size="12">1.26e+03</text>
+<text x="186.0" y="515" text-anchor="middle" font-family="Arial" font-size="12">5</text>
+<text x="358.0" y="515" text-anchor="middle" font-family="Arial" font-size="12">10</text>
+<text x="530.0" y="515" text-anchor="middle" font-family="Arial" font-size="12">20</text>
+<text x="702.0" y="515" text-anchor="middle" font-family="Arial" font-size="12">50</text>
+<text x="874.0" y="515" text-anchor="middle" font-family="Arial" font-size="12">100</text>
+<polyline points="186.0,479.6 358.0,465.7 530.0,438.3 702.0,352.8 874.0,222.4" fill="none" stroke="#555555" stroke-width="2.5"/>
+<circle cx="186.0" cy="479.6" r="4" fill="#555555"/>
+<circle cx="358.0" cy="465.7" r="4" fill="#555555"/>
+<circle cx="530.0" cy="438.3" r="4" fill="#555555"/>
+<circle cx="702.0" cy="352.8" r="4" fill="#555555"/>
+<circle cx="874.0" cy="222.4" r="4" fill="#555555"/>
+<rect x="100" y="565" width="14" height="14" fill="#555555"/>
+<text x="120" y="577" font-family="Arial" font-size="12">PRR</text>
+<polyline points="186.0,479.7 358.0,466.8 530.0,440.9 702.0,358.4 874.0,231.6" fill="none" stroke="#4a7fb5" stroke-width="2.5"/>
+<circle cx="186.0" cy="479.7" r="4" fill="#4a7fb5"/>
+<circle cx="358.0" cy="466.8" r="4" fill="#4a7fb5"/>
+<circle cx="530.0" cy="440.9" r="4" fill="#4a7fb5"/>
+<circle cx="702.0" cy="358.4" r="4" fill="#4a7fb5"/>
+<circle cx="874.0" cy="231.6" r="4" fill="#4a7fb5"/>
+<rect x="290" y="565" width="14" height="14" fill="#4a7fb5"/>
+<text x="310" y="577" font-family="Arial" font-size="12">PRM</text>
+<polyline points="186.0,475.6 358.0,457.0 530.0,416.2 702.0,288.7 874.0,108.2" fill="none" stroke="#e0a13c" stroke-width="2.5"/>
+<circle cx="186.0" cy="475.6" r="4" fill="#e0a13c"/>
+<circle cx="358.0" cy="457.0" r="4" fill="#e0a13c"/>
+<circle cx="530.0" cy="416.2" r="4" fill="#e0a13c"/>
+<circle cx="702.0" cy="288.7" r="4" fill="#e0a13c"/>
+<circle cx="874.0" cy="108.2" r="4" fill="#e0a13c"/>
+<rect x="480" y="565" width="14" height="14" fill="#e0a13c"/>
+<text x="500" y="577" font-family="Arial" font-size="12">Contextual Bandit RL</text>
+<polyline points="186.0,477.9 358.0,461.4 530.0,426.8 702.0,331.9 874.0,186.3" fill="none" stroke="#c0392b" stroke-width="2.5"/>
+<circle cx="186.0" cy="477.9" r="4" fill="#c0392b"/>
+<circle cx="358.0" cy="461.4" r="4" fill="#c0392b"/>
+<circle cx="530.0" cy="426.8" r="4" fill="#c0392b"/>
+<circle cx="702.0" cy="331.9" r="4" fill="#c0392b"/>
+<circle cx="874.0" cy="186.3" r="4" fill="#c0392b"/>
+<rect x="670" y="565" width="14" height="14" fill="#c0392b"/>
+<text x="690" y="577" font-family="Arial" font-size="12">Proposed Hybrid</text>
+</svg>
