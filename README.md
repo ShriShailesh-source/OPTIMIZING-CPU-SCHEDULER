@@ -64,7 +64,8 @@ project/
 ├── config.py                    # every tunable constant, single source of truth
 │
 ├── models/
-│   └── vm.py                    # VM/vCPU data model
+│   ├── vm.py                    # VM/vCPU data model
+│   └── cpu_config.py             # simulated CPU configuration registry
 │
 ├── schedulers/
 │   ├── prr.py                   # Algorithm 1: Priority Round Robin
@@ -244,3 +245,40 @@ python tests_manual_validation.py
   analysis (that analysis could be added as an extension).
 - The contextual bandit learns only within each simulated run; it is not
   pre-trained and no deep-learning model is used.
+
+## 13. CPU Configuration Experiment
+
+The project evaluates three named **simulated CPU configurations**: ARM-like,
+x86-like, and RISC-V-like. These are not physical processors, benchmark
+measurements, or claims that one instruction set is inherently faster or more
+efficient. The host CPU is never detected.
+
+| Configuration | Execution speed factor | Estimated energy factor |
+|---|---:|---:|
+| ARM-like | 0.85 | 0.95 |
+| x86-like | 1.00 | 1.00 |
+| RISC-V-like | 0.92 | 1.00 |
+
+These modest values are illustrative simulation parameters. For requested CPU
+work $W$, the shared simulator advances elapsed time by
+`W / execution_speed_factor`; therefore completion, waiting, turnaround,
+response, deadlines, throughput, and utilization are affected during the run,
+not multiplied after it. Estimated energy is workload power rate x elapsed
+simulated time x the selected estimated energy factor. It is not physical
+power measurement or a claim of power savings.
+
+The CPU-aware full sweep uses the same workload definitions, VM counts,
+workload types, seeds, quantum, and deep-copied workloads for every scheduler.
+It contains 3 x 5 x 5 x 5 x 4 = 1,500 scheduler runs. New outputs use the
+`cpu_comparison_` prefix so the original experiment files remain preserved.
+CPU-axis plots are generated alongside the existing plots.
+
+### Paper and Viva Claims to Update
+
+Replace the old 500-run methodology count with 1,500 and name CPU
+configuration as an experimental factor. Add the parameter table and explain
+that the values are illustrative. Replace any physical ARM/x86/RISC-V or
+multi-platform validation claim with simulated CPU configurations. Label
+energy as estimated/simulated and interpret conclusions as applying only to
+this model; do not claim physical performance, energy savings, or ISA
+superiority.

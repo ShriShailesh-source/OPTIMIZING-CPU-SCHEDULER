@@ -13,8 +13,19 @@ for the course project scope. Say this plainly and move on -- don't
 overclaim.
 
 **If asked "is the energy number real?"**
-No, it's an explicitly labelled estimated proxy: `power[workload_type] *
-execution_time`. Point to `modules/energy_model.py`'s docstring.
+No, it's an explicitly labelled estimated/simulated proxy:
+`power[workload_type] * elapsed_time * estimated_energy_factor`. No physical
+power was measured.
+
+**If asked "what are ARM-like, x86-like, and RISC-V-like?"**
+They are simulated execution environments with illustrative parameters, not
+benchmark measurements. The host laptop CPU is never detected or used.
+
+**If asked "how is the comparison fair across CPU configurations?"**
+Every configuration uses the same workload definitions, VM counts, workload
+types, seeds, quantum, and deep-copied VM lists for all four schedulers. The
+configuration changes only shared execution timing and the explicit estimated
+energy factor.
 
 **If asked "how is this different from a normal priority scheduler?"**
 Walk through the three proposed modules one at a time:

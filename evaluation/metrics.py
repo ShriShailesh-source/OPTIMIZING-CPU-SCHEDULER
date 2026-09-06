@@ -85,6 +85,7 @@ def compute_metrics(res) -> dict:
 
     return {
         "scheduler": res.scheduler_name,
+              "cpu_config": res.cpu_config,
         "num_vms": n,
         "avg_waiting_time": round(avg_waiting, 4),
         "avg_turnaround_time": round(avg_turnaround, 4),

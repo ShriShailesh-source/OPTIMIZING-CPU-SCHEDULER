@@ -20,6 +20,7 @@ from config import (
     VM_COUNT_PRESETS,
     WORKLOAD_TYPES,
 )
+from models.cpu_config import CPU_CONFIG_NAMES, DEFAULT_CPU_CONFIG
 from simulation.workload_generator import generate_workload, fresh_copy
 from simulation.simulator import Simulator
 from evaluation.metrics import compute_metrics
@@ -30,7 +31,7 @@ from visualization.gantt import plot_gantt
 
 RESULTS_DIR = "results"
 SUMMARY_COLUMNS = [
-    "scheduler", "num_vms", "workload_type", "avg_waiting_time",
+    "cpu_config", "scheduler", "num_vms", "workload_type", "avg_waiting_time",
     "avg_turnaround_time", "avg_response_time", "cpu_utilization",
     "throughput", "deadline_misses", "deadline_miss_rate",
     "fairness_jain_index", "estimated_energy", "context_switches",
@@ -64,11 +65,12 @@ def ask_choice(prompt, choices, default):
     return raw if raw in choices else default
 
 
-def print_experiment_config(vm_counts, workload_types, seeds):
+def print_experiment_config(vm_counts, workload_types, seeds, cpu_configs=CPU_CONFIG_NAMES):
     print("\n=== Experiment Configuration ===")
     print(f"VM counts: {', '.join(map(str, vm_counts))}")
     print(f"Workloads: {', '.join(workload_types)}")
     print(f"Seeds: {', '.join(map(str, seeds))}")
+    print(f"CPU configurations: {', '.join(cpu_configs)} (simulated)")
     print("Schedulers: PRR, PRM, Contextual Bandit RL, Proposed Hybrid")
 
 
@@ -88,12 +90,13 @@ def save_experiment_results(long_df, avg_df, prefix):
     print(f"Human-readable overall summary -> {reports['overall_md']}")
 
 
-def run_configured_experiment(vm_counts, workload_types, seeds, prefix):
-    print_experiment_config(vm_counts, workload_types, seeds)
+def run_configured_experiment(vm_counts, workload_types, seeds, prefix, cpu_configs=CPU_CONFIG_NAMES):
+    print_experiment_config(vm_counts, workload_types, seeds, cpu_configs)
     long_df, avg_df = run_full_experiment(
         vm_counts=vm_counts,
         workload_types=workload_types,
         seeds=seeds,
+        cpu_configs=cpu_configs,
     )
     save_experiment_results(long_df, avg_df, prefix)
 
@@ -103,7 +106,7 @@ def menu_small_experiment():
         vm_counts=[5],
         workload_types=list(WORKLOAD_TYPES),
         seeds=list(FINAL_EXPERIMENT_SEEDS),
-        prefix="small_experiment",
+        prefix="cpu_comparison_small_experiment",
     )
 
 
@@ -113,7 +116,8 @@ def menu_single_comparison():
     seed = ask_int("Random seed", DEFAULT_SEED)
     quantum = ask_int("Time quantum", DEFAULT_TIME_QUANTUM)
 
-    df, _ = run_single_comparison(num_vms, workload, seed, quantum=quantum)
+    df, _ = run_single_comparison(num_vms, workload, seed, quantum=quantum,
+                                  cpu_config=DEFAULT_CPU_CONFIG)
     print("\n=== Single Comparison Results ===")
     print(df.to_string(index=False))
     os.makedirs(RESULTS_DIR, exist_ok=True)
@@ -135,7 +139,7 @@ def menu_full_experiment():
     n_seeds = int(seeds_raw) if seeds_raw else len(FINAL_EXPERIMENT_SEEDS)
     seeds = list(range(1, n_seeds + 1))
 
-    run_configured_experiment(vm_counts, workload_types, seeds, "full_experiment")
+    run_configured_experiment(vm_counts, workload_types, seeds, "cpu_comparison_full_experiment")
 
 
 def menu_individual_workload_experiment():
@@ -144,7 +148,7 @@ def menu_individual_workload_experiment():
         vm_counts=list(VM_COUNT_PRESETS),
         workload_types=[workload],
         seeds=list(FINAL_EXPERIMENT_SEEDS),
-        prefix=f"{workload}_experiment",
+        prefix=f"cpu_comparison_{workload}_experiment",
     )
 
 
@@ -164,7 +168,7 @@ def menu_view_rl_decisions():
 
 
 def menu_generate_graphs():
-    csv_path = os.path.join(RESULTS_DIR, "full_experiment_avg.csv")
+    csv_path = os.path.join(RESULTS_DIR, "cpu_comparison_full_experiment_avg.csv")
     if not os.path.exists(csv_path):
         print(f"No averaged experiment results found at {csv_path}.")
         print("Run option 2 (Run full experiment) first.")

@@ -20,13 +20,14 @@ assumed to draw more estimated power per tick than a light one).
 """
 
 from config import ESTIMATED_POWER_PER_TICK, IDLE_POWER_PER_TICK
+from models.cpu_config import CPUConfig, get_cpu_config
 from models.vm import VM
 
 
-def estimate_energy(vm: VM, run_time: float) -> float:
-    """Estimated energy units consumed by running `vm` for `run_time` ticks."""
+def estimate_energy(vm: VM, run_time: float, cpu_config: CPUConfig = None) -> float:
+    """Estimated energy for elapsed simulated runtime, never physical power."""
     power = ESTIMATED_POWER_PER_TICK.get(vm.workload_type, 1.5)
-    return power * run_time
+    return power * run_time * get_cpu_config(cpu_config).estimated_energy_factor
 
 
 def estimate_power_rate(vm: VM) -> float:

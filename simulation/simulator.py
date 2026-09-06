@@ -29,6 +29,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from config import DEFAULT_TIME_QUANTUM, CONTEXT_SWITCH_OVERHEAD
+from models.cpu_config import CPUConfig, get_cpu_config
 from models.vm import VM
 from modules.energy_model import estimate_energy
 
@@ -41,15 +42,18 @@ class SimulationResult:
     total_idle_time: float
     context_switches: int
     scheduler_name: str
+    cpu_config: str
     decision_log: list = field(default_factory=list)   # for debug / viva demo
 
 
 class Simulator:
-    def __init__(self, quantum: float = DEFAULT_TIME_QUANTUM, debug: bool = False):
+    def __init__(self, quantum: float = DEFAULT_TIME_QUANTUM, debug: bool = False,
+                 cpu_config: CPUConfig = None):
         if quantum <= 0:
             raise ValueError("quantum must be greater than zero")
         self.quantum = quantum
         self.debug = debug
+        self.cpu_config = get_cpu_config(cpu_config)
 
     def run(self, vms: list[VM], scheduler, scheduler_name: str = "") -> SimulationResult:
         """
@@ -100,15 +104,16 @@ class Simulator:
 
             # 5. execute for one quantum slice (or until completion)
             start_time = time
-            run_time = min(self.quantum, chosen.remaining_time)
-            chosen.remaining_time -= run_time
-            time += run_time
+            work_time = min(self.quantum, chosen.remaining_time)
+            elapsed_time = work_time / self.cpu_config.execution_speed_factor
+            chosen.remaining_time -= work_time
+            time += elapsed_time
             end_time = time
-            total_busy += run_time
+            total_busy += elapsed_time
             chosen.last_run_time = time
 
             # ESTIMATED energy accounting for the slice just executed
-            chosen.energy_consumed += estimate_energy(chosen, run_time)
+            chosen.energy_consumed += estimate_energy(chosen, elapsed_time, self.cpu_config)
 
             finished = chosen.remaining_time <= 1e-9
             reward_info = {}
@@ -117,7 +122,8 @@ class Simulator:
                 chosen.remaining_time = 0.0
                 chosen.completion_time = time
                 chosen.turnaround_time = chosen.completion_time - chosen.arrival_time
-                chosen.waiting_time = chosen.turnaround_time - chosen.burst_time
+                service_time = chosen.burst_time / self.cpu_config.execution_speed_factor
+                chosen.waiting_time = chosen.turnaround_time - service_time
                 chosen.finished = True
                 ready.remove(chosen)
                 completed.append(chosen)
@@ -132,14 +138,15 @@ class Simulator:
             # update *waiting* time for everyone else still waiting this slice
             for v in ready:
                 if v.vm_id != chosen.vm_id:
-                    v.waiting_time += run_time
+                    v.waiting_time += elapsed_time
 
-            reward_info["run_time"] = run_time
+                reward_info["run_time"] = work_time
+                reward_info["elapsed_time"] = elapsed_time
             reward_info["others_waiting"] = len(ready)
 
             # 6. let learning schedulers observe the outcome
             if hasattr(scheduler, "on_decision_result"):
-                scheduler.on_decision_result(chosen, run_time, finished, reward_info, self)
+                scheduler.on_decision_result(chosen, work_time, finished, reward_info, self)
 
             decision_log.append({
                 "order": len(decision_log) + 1,
@@ -147,9 +154,9 @@ class Simulator:
                 "selected_vm": chosen.vm_id,
                 "start_time": round(start_time, 2),
                 "end_time": round(end_time, 2),
-                "duration": round(run_time, 2),
+                "duration": round(elapsed_time, 2),
                 "time": round(end_time, 2),
-                "run_time": run_time,
+                "run_time": work_time,
                 "finished": finished,
                 "ready_count": len(ready) + (1 if finished else 0),
             })
@@ -164,5 +171,6 @@ class Simulator:
             total_idle_time=total_idle,
             context_switches=context_switches,
             scheduler_name=scheduler_name,
+            cpu_config=self.cpu_config.name,
             decision_log=decision_log,
         )

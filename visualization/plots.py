@@ -98,6 +98,24 @@ def line_vs_workload(avg_df, metric, ylabel, title, outdir, filename, num_vms=No
     return save_fig(fig, outdir, filename)
 
 
+def line_vs_cpu(avg_df, metric, ylabel, title, outdir, filename):
+    """Compare a metric across the explicitly simulated CPU configurations."""
+    cpu_order = [name for name in ["ARM-like", "x86-like", "RISC-V-like"]
+                 if name in avg_df["cpu_config"].unique()]
+    fig, ax = plt.subplots(figsize=(7.5, 5))
+    for sched in _ordered(avg_df):
+        sub = avg_df[avg_df["scheduler"] == sched].groupby("cpu_config")[metric].mean()
+        sub = sub.reindex(cpu_order)
+        ax.plot(cpu_order, sub.values, marker="o", label=sched, color=COLORS.get(sched))
+    ax.set_xlabel("Simulated CPU configuration")
+    ax.set_ylabel(ylabel)
+    ax.set_title(title, fontsize=13, fontweight="bold")
+    ax.legend()
+    ax.grid(alpha=0.3)
+    fig.tight_layout()
+    return save_fig(fig, outdir, filename)
+
+
 def generate_all_summary_plots(avg_df, outdir="results"):
     """Generates the full required set of comparison graphs from an averaged
     experiment DataFrame (as returned by run_full_experiment)."""
@@ -126,6 +144,9 @@ def generate_all_summary_plots(avg_df, outdir="results"):
                                   fname.replace(".png", "_vs_vms.png")))
         paths.append(line_vs_workload(avg_df, metric, ylabel, f"{title} vs. Workload Intensity", outdir,
                                        fname.replace(".png", "_vs_workload.png")))
+        if "cpu_config" in avg_df.columns:
+            paths.append(line_vs_cpu(avg_df, metric, ylabel, f"{title} vs. Simulated CPU", outdir,
+                                     fname.replace(".png", "_vs_cpu.png")))
 
     return paths
 

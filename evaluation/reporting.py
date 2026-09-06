@@ -4,7 +4,7 @@ import os
 
 
 DISPLAY_COLUMNS = [
-    "scheduler", "avg_waiting_time", "avg_turnaround_time", "avg_response_time",
+    "cpu_config", "scheduler", "avg_waiting_time", "avg_turnaround_time", "avg_response_time",
     "cpu_utilization", "throughput", "deadline_miss_rate",
     "fairness_jain_index", "estimated_energy", "context_switches",
     "estimated_scheduling_overhead",
@@ -28,12 +28,13 @@ def _write_markdown_table(frame, path, title):
 def save_human_readable_summaries(avg_df, outdir="results", prefix="full_experiment"):
     """Save overall and workload-level scheduler summaries as CSV and Markdown."""
     os.makedirs(outdir, exist_ok=True)
-    metric_cols = [column for column in DISPLAY_COLUMNS if column != "scheduler"]
+    metric_cols = [column for column in DISPLAY_COLUMNS
+                   if column not in {"cpu_config", "scheduler"}]
 
-    overall = avg_df.groupby("scheduler", as_index=False)[metric_cols].mean()
+    overall = avg_df.groupby(["cpu_config", "scheduler"], as_index=False)[metric_cols].mean()
     overall = overall[DISPLAY_COLUMNS].sort_values("scheduler")
     by_workload = avg_df[["workload_type", "num_vms", *DISPLAY_COLUMNS]].sort_values(
-        ["workload_type", "num_vms", "scheduler"]
+        ["cpu_config", "workload_type", "num_vms", "scheduler"]
     )
 
     outputs = {
