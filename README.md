@@ -178,10 +178,6 @@ comes from an actual `Simulator.run()` call.
 
 ## 10. How to Run
 
-For a presentation-focused explanation of the implementation flow and the
-important scheduling code, see
-[`IMPLEMENTATION_EXPLANATION.md`](IMPLEMENTATION_EXPLANATION.md).
-
 ```bash
 pip install -r requirements.txt
 python main.py

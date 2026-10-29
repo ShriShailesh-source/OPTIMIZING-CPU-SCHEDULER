@@ -103,8 +103,15 @@ class Simulator:
                 chosen.context_switches += 1
 
             # 5. execute for one quantum slice (or until completion)
+            # Respect adaptive quantum signalled by the scheduler (e.g. Hybrid V3)
             start_time = time
-            work_time = min(self.quantum, chosen.remaining_time)
+            # A recommendation applies only to this dispatch.  Removing the
+            # transient signal prevents an old fast-path allocation from
+            # leaking into a later decision should a scheduler be extended.
+            effective_q = getattr(chosen, '_recommended_quantum', self.quantum)
+            if hasattr(chosen, '_recommended_quantum'):
+                delattr(chosen, '_recommended_quantum')
+            work_time = min(effective_q, chosen.remaining_time)
             elapsed_time = work_time / self.cpu_config.execution_speed_factor
             chosen.remaining_time -= work_time
             time += elapsed_time
